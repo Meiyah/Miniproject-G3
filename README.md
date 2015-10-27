@@ -6,7 +6,11 @@ This software is subjected to the MIT License. For details, please see LICENSE
 
 # Dependendencies
 This software relies on the following Python extensions:
+
 •	Pillow
+
 •	Purepng
+
 •	Qrcode
+
 •	xmltodict
