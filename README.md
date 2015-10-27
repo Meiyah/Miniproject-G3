@@ -8,9 +8,13 @@ This software is subjected to the MIT License. For details, please see LICENSE
 This software relies on the following Python extensions:
 
 •	Pillow
-
 •	Purepng
-
 •	Qrcode
-
 •	xmltodict
+
+# Authors
+• CptBanzai
+• JoeriStrik
+• Kelvinbroek
+• Meiyah
+• pjotrpaauw
