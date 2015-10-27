@@ -1,9 +1,9 @@
 import sqlite3
 
-conn = sqlite3.connect('bezoekers_data.db')
+conn = sqlite3.connect('project_database.db')
 c = conn.cursor()
 
-#c.execute("CREATE TABLE Aanbieders('ID' TEXT, 'Password' TEXT)")
+c.execute("CREATE TABLE Aanbieders('ID' TEXT, 'Password' TEXT)")
 
 
 aanbieders = ['Youri', 'Jens', 'Kelvin', 'Ryan', 'Pjotr']
