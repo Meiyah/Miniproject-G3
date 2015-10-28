@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root xmlns:nsd="http://structorizer.fisch.lu/" text="&#34;THUISBIOSCOOP OPDRACHT A3&#34;" comment="&#34;&#34;" color="ffffff" type="program" style="nice">
+	<children>
+		<case text="&#34;AANBIEDER&#34;,&#34;True&#34;,&#34;False&#34;" comment="&#34;&#34;" color="ffffff">
+			<qCase>
+				<instruction text="&#34;Vraag ID, Password&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
+				<case text="&#34;ID, password&#34;,&#34;True&#34;,&#34;False&#34;" comment="&#34;&#34;" color="ffffff">
+					<qCase>
+						<instruction text="&#34;Lees Bezoekers.csv&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
+						<instruction text="&#34;Print Bezoekers overzicht&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
+					</qCase>
+					<qCase>
+						<instruction text="&#34;Vraag ID,password opnieuw&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
+					</qCase>
+				</case>
+			</qCase>
+			<qCase>
+				<case text="&#34;Is de gebruiker kijker?&#34;,&#34;True&#34;,&#34;False&#34;" comment="&#34;&#34;" color="ffffff">
+					<qCase>
+						<instruction text="&#34;Vraag Naam, Email&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
+						<case text="&#34;Naam, Email&#34;,&#34;True&#34;,&#34;False&#34;" comment="&#34;&#34;" color="ffffff">
+							<qCase>
+								<instruction text="&#34;Lees Films.xml&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
+								<case text="&#34;Keuze Film&#34;,&#34;True&#34;,&#34;False&#34;" comment="&#34;&#34;" color="ffffff">
+									<qCase>
+										<instruction text="&#34;Schrijf film naar bezoekers.csv&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
+									</qCase>
+									<qCase>
+										<instruction text="&#34;Kies opnieuw een film&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
+									</qCase>
+								</case>
+							</qCase>
+							<qCase>
+								<instruction text="&#34;Vraag Naam, Email opnieuw&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
+							</qCase>
+						</case>
+					</qCase>
+					<qCase>
+						<instruction text="&#34;Terug naar beginscherm&#34;" comment="&#34;&#34;" color="ffffff" rotated="0"></instruction>
+					</qCase>
+				</case>
+			</qCase>
+		</case>
+	</children>
+</root>
