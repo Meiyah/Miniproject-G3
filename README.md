@@ -21,11 +21,12 @@ This software relies on the following Python extensions:
 * import show error
 * import show error show warning
 
+# PSD
+![PSD](/Documentation/THUISBIOSCOOP OPDRACHT A3.png?raw=true)
+
 # Authors
 * CptBanzai
 * JoeriStrik
 * Kelvinbroek
 * Meiyah
 * pjotrpaauw
-
-![PSD](/Documentation/THUISBIOSCOOP OPDRACHT A3.png?raw=true)
