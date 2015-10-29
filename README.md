@@ -7,21 +7,16 @@ This software is subjected to the MIT License. For details, please see LICENSE
 # Dependendencies
 This software relies on the following Python extensions:
 
-•	Pillow
-
-•	Purepng
-
-•	Qrcode
-
-•	xmltodict
+* Pillow
+*	Purepng
+* Qrcode
+* xmltodict
 
 # Authors
-• CptBanzai
+* CptBanzai
+* JoeriStrik
+* Kelvinbroek
+* Meiyah
+* pjotrpaauw
 
-• JoeriStrik
-
-• Kelvinbroek
-
-• Meiyah
-
-• pjotrpaauw
+![PSD](/Documentation/THUISBIOSCOOP OPDRACHT A3.png?raw=true)
