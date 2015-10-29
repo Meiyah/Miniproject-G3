@@ -11,6 +11,15 @@ This software relies on the following Python extensions:
 *	Purepng
 * Qrcode
 * xmltodict
+* TKinter
+* TKinter message box
+* Random
+* requests
+* time
+* date/time
+* SQLite3
+* import show error
+* import show error show warning
 
 # Authors
 * CptBanzai
