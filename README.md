@@ -25,7 +25,7 @@ This software relies on the following Python extensions:
 ![PSD](/Documentation/THUISBIOSCOOP OPDRACHT A3.png?raw=true)
 
 # How to run the Program
-Open project2.0.py in your preferred python IDE like Pycharm 3.4 as example. You will then see a window pop-up where you can choose if you are a "aanbieder" or a "guest"
+Open project2.0.py in your preferred python IDE like Pycharm 3.4 as example. Run the file in Pycharm, you will then see a window pop-up where you can choose if you are a "aanbieder" or a "guest"
 After this step you have to put in a ID and password. The program will then follow the steps as shown above in the PSD.
 
 # Authors
