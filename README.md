@@ -7,21 +7,30 @@ This software is subjected to the MIT License. For details, please see LICENSE
 # Dependendencies
 This software relies on the following Python extensions:
 
-•	Pillow
+* Pillow
+*	Purepng
+* Qrcode
+* xmltodict
+* TKinter
+* TKinter message box
+* Random
+* requests
+* time
+* date/time
+* SQLite3
+* import show error
+* import show error show warning
 
-•	Purepng
+# PSD
+![PSD](/Documentation/THUISBIOSCOOP OPDRACHT A3.png?raw=true)
 
-•	Qrcode
-
-•	xmltodict
+# How to run the Program
+Open project2.0.py in your preferred python IDE like Pycharm 3.4 as example. Run the file in Pycharm, you will then see a window pop-up where you can choose if you are a "aanbieder" or a "guest"
+After this step you have to put in a ID and password. The program will then follow the steps as shown above in the PSD.
 
 # Authors
-• CptBanzai
-
-• JoeriStrik
-
-• Kelvinbroek
-
-• Meiyah
-
-• pjotrpaauw
+* CptBanzai
+* JoeriStrik
+* Kelvinbroek
+* Meiyah
+* pjotrpaauw
