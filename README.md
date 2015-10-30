@@ -1,5 +1,5 @@
 # Programming project A3
-Programming miniproject,
+Programming miniproject V1G team 3 opdracht A3
 
 The Thuisbioscoop app from filmtotaal is a powerful yet simple program.
 Users can see which movies are available at the current day or the day after.
