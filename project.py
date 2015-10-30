@@ -130,10 +130,10 @@ def close_Frame2():
         frame2.destroy()
         frame3.pack()
 
-        Label(frame3, text=("naam:", definitieve_naam)).pack()
-        Label(frame3, text=("email:", definitieve_email)).pack()
-        Label(frame3, text=("code:", definitieve_code)).pack()
-        Label(frame3, text=("film:", selectwaarde)).pack()
+        Label(frame3, text=("naam:", definitieve_naam), width=50, bg='black', fg='White', font=15).pack(pady = 10)
+        Label(frame3, text=("email:", definitieve_email), width=50, bg='black', fg='White', font=15).pack(pady = 10)
+        Label(frame3, text=("code:", definitieve_code), width=50, bg='black', fg='White', font=15).pack(pady = 10)
+        Label(frame3, text=("film:", selectwaarde), width=50, bg='black', fg='White', font=15).pack(pady = 10)
     else:
         showinfo(title="popup", message="Kies een film alstublieft")
 
@@ -261,7 +261,7 @@ w1 = Label(frame3 , image=logo3).pack(side="top")
 
 gegevens = Label(frame3, text="uw gegevens:", bg="red4",fg="white", font=25).pack(ipadx=100, ipady=30)
 
-accept = Button(frame3, text="accept",bg="seagreen1", command=(lambda: close_Frame3())).pack(side=BOTTOM)
+accept = Button(frame3, text="accept",bg="seagreen1", command=(lambda: close_Frame3())).pack(side=BOTTOM, pady = 10)
 #EINDE FRAME n3####################################################
 #EINDE KIJKERSCHERMEN\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
@@ -289,10 +289,6 @@ def QRcode(lijst_bezoekers):
 
     #Save the Code
     img.save('qrcode_project.png')
-
-
-
-
 
 
 
@@ -343,9 +339,9 @@ def meldAan():
 
             img = Label(Kijkerslist,image =render)
             img.image = render
-            img.place(x = 0, y = 0)
+            img.place(x = 250, y = 125)
 
-            Kijkerslist.pack(ipadx=200)
+            Kijkerslist.pack(ipadx=500, ipady=400)
             print("done")
 
     if not ingelogd:
@@ -359,7 +355,7 @@ def meldAan():
 
 
 def Loginscreen():
-    #aanmaak van atributen voor het inlogscherm
+    #aanmaak van attributen voor het inlogscherm
     welkom = Label(aanmeldFrame, text="Voer uw gegevens in A.u.b.",bg="red4",fg="white",font=("Helvetica", 16)).pack()
 
     global GETID
