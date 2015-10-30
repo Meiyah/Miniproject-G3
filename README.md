@@ -1,7 +1,7 @@
 # Programming project A3
 Programming miniproject, 
 
-The Thuisbioscoop app from filmtotaal is a powerfull yet simple program.
+The Thuisbioscoop app from filmtotaal is a powerful yet simple program.
 Users can see which movies are available at the current day or the day after. 
 Information from movies like time and title is called from the TV API from Filmtotaal.
 This is presented by a user friendly TKinter GUi.
