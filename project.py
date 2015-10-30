@@ -1,12 +1,16 @@
+#afhandelen van alle imports die nodig zijn
 from tkinter import *
 from tkinter.messagebox import showinfo
-import csv
+from tkinter.messagebox import showwarning
+from tkinter.messagebox import askyesno
 import xmltodict
 import random
 import requests
 import time
 import datetime
-
+import sqlite3
+from qrcode import *
+from PIL import Image, ImageTk
 
 #########API KEY VAN DE DAG OPVRAGEN##############
 #tijd instellen
@@ -20,14 +24,73 @@ response = requests.get('http://www.filmtotaal.nl/api/filmsoptv.xml?apikey=0246c
 auth=auth_details)
 
 def schrijf_xml():
-    bestand = open('films.xml', 'w')
-    bestand.write(str(response.text))
+    bestand = open('films.xml', 'wb')
+    bestand.write(bytes(response.text, 'UTF-8'))
     bestand.close()
 
 schrijf_xml()
 ################################################
 
+#xml omzetten zodat die kan worden uitgelezen
+def verwerk_xml(file):
+    bestand = open(file, 'r')
+    xml_string = bestand.read()
+    return xmltodict.parse(xml_string)
+
+films = verwerk_xml('films.xml')
+
+
+###############SQL#####################################
+
+#connectie leggen met de database
+conn = sqlite3.connect('project_database.db')
+c = conn.cursor()
+
+#aanbieders ophalen
+aanbieders = verwerk_xml('aanbiedersaccount.xml')
+
+#alle huidige titels ophalen
+filmsSQL = c.execute("SELECT Titel FROM Films")
+
+film_lijst = []
+Nieuwe_film_lijst = []
+Nieuwe_film_lijst_tijden = []
+
+
+#nieuwe films
+for row in range(len(films['filmsoptv']['film'])):
+    Nieuwe_film_lijst.append(films['filmsoptv']['film'][row]['titel'])
+    Nieuwe_film_lijst_tijden.append(datetime.datetime.fromtimestamp(int(films['filmsoptv']['film'][row]['starttijd'])).strftime('%H:%M'))
+
+#bestaande films
+for row in filmsSQL:
+    film_lijst.append(row)
+
+
+#zodra er nieuwe films zijn wordt de tabel met oude films geleegd
+for i in film_lijst:
+    if i not in Nieuwe_film_lijst:
+        c.execute("DELETE FROM Films WHERE Titel IS ?", (i))
+        c.execute("DELETE FROM FilmsMetAanbieders")
+
+
+#als er een nieuwe film is wordt deze in de database gezet
+try:
+    for j in Nieuwe_film_lijst:
+        if j not in film_lijst:
+            for i in range(len(films['filmsoptv']['film'])):
+                c.execute("INSERT INTO Films VALUES(?, ?, ?)", (films['filmsoptv']['film'][i]['titel'], films['filmsoptv']['film'][i]['jaar'], (datetime.datetime.fromtimestamp(int(films['filmsoptv']['film'][i]['starttijd'])).strftime('%H:%M'))))
+                getal = random.randrange(0,5)
+                c.execute("INSERT INTO FilmsMetAanbieders VALUES(?, ?)", (films['filmsoptv']['film'][i]['titel'], aanbieders['aanbieders']['aanbieder'][getal]['Naam']))
+except:
+    print("titels bestaan al")
+
+###################################################################
+
+
 #\\\\\\\\\\\\\\\\\\\Kijker\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+#globale variabelen
 definitieve_naam = ""
 definitieve_email = ""
 definitieve_code = ""
@@ -35,6 +98,7 @@ definitieve_code = ""
 selectwaarde = ""
 
 def selectie(evt):
+    #waarde opslaan waar de cursor op het moment is in de listbox van scherm 2
     value=Filmlijst.get(Filmlijst.curselection())
     global selectwaarde
     selectwaarde = value[0]
@@ -42,6 +106,7 @@ def selectie(evt):
 
 
 def close_frame1():
+    #sluiten van eerste kijkerscherm
     global definitieve_naam
     definitieve_naam = GETnaam.get()
 
@@ -51,27 +116,37 @@ def close_frame1():
     global definitieve_code
     definitieve_code = codeGenerator(definitieve_naam)
 
-    frame1.destroy()
-    frame2.pack()
+    #naam en email vakken mogen niet leeg zijn en mailvak moet bepaalde waardes bevatten om door te kunnen
+    if ((definitieve_naam != "") and (definitieve_email != "") and ("@" in definitieve_email) and ((".com" in definitieve_email) or (".nl" in definitieve_email))):
+        frame1.destroy()
+        frame2.pack()
+    else:
+        showinfo(title="popup", message="onjuiste invoer!")
 
-def verwerk_xml(file):
-    bestand = open(file, 'r')
-    xml_string = bestand.read()
-    return xmltodict.parse(xml_string)
 
 def close_Frame2():
-    frame2.destroy()
-    frame3.pack()
+    #sluiten van tweede kijkerscherm
+    if selectwaarde != "":
+        frame2.destroy()
+        frame3.pack()
 
-    Label(frame3, text=("naam:", definitieve_naam)).pack()
-    Label(frame3, text=("email:", definitieve_email)).pack()
-    Label(frame3, text=("code:", definitieve_code)).pack()
-    Label(frame3, text=("film:", gekozenFilm())).pack()
+        Label(frame3, text=("naam:", definitieve_naam)).pack()
+        Label(frame3, text=("email:", definitieve_email)).pack()
+        Label(frame3, text=("code:", definitieve_code)).pack()
+        Label(frame3, text=("film:", selectwaarde)).pack()
+    else:
+        showinfo(title="popup", message="Kies een film alstublieft")
+
+def close_Frame3():
+    #sluiten van laatste kijkerscherm en gegevens invoeren in database
+    c.execute("INSERT INTO Bezoekers VALUES(?, ?, ?, ?, ?)", (selectwaarde, definitieve_naam, definitieve_email, definitieve_code, date))
+    conn.commit()
+    window.destroy()
 
 def codeGenerator(naam):
+    #aanmaken van een unieke code voor de kijker gebasseerd op zijn/haar naam
     code = naam
     uniek = ""
-
 
     for i in code :
         r = ord(i) + random.randrange(1, 4)
@@ -79,61 +154,75 @@ def codeGenerator(naam):
         uniek += q
     return uniek
 
-def gekozenFilm():
-    return selectwaarde
-
-def close_Frame3():
-    reader.writerow((gekozenFilm(), definitieve_naam, definitieve_email, definitieve_code))
-    window.destroy()
-    bestand.close()
-
 def kijkerScherm():
+    #wordt actief wanneer er sprake is van een kijker
     beginscherm.destroy()
     frame1.pack()
 
 def aanbiederScherm():
+    #wordt actief wanneer er sprake is van een aanbieder
     beginscherm.destroy()
     aanmeldFrame.pack()
 
-
+#initialiseren van basis programma
 window = Tk()
-window.title("project")
+window.title("Welcome")
 
+w, h = window.winfo_screenwidth(), window.winfo_screenheight()
+window.overrideredirect(1)
+window.geometry("%dx%d+0+0" % (w, h))
+
+window.configure(background="black")
+
+#eerste scherm van programma meteen activeren
 beginscherm = Frame(window)
 beginscherm.pack()
-beginbutton = Button(beginscherm, text="aanbieder", command=(lambda: aanbiederScherm())).pack()
-beginbutton2 = Button(beginscherm, text="kijker", command=(lambda: kijkerScherm())).pack()
+
+#GIF afbeelding
+begin_logo = PhotoImage(file="cinema.gif")
+w1 = Label(beginscherm,bg="black" , image=begin_logo).pack(side="top")
+
+#afhandelen van de 2 beginscherm buttons
+beginbutton = Button(beginscherm, text="Aanbieder",bg="red4",fg="white", width = 87,command=(lambda: aanbiederScherm())).pack()
+beginbutton2 = Button(beginscherm, text="Kijker",bg="red4" ,fg="white",width = 87,command=(lambda: kijkerScherm())).pack()
 
 
-aanmeldFrame = Frame(window)
+def callback():
+    #functie voor de quit button
+    if askyesno('Verify', 'Do you Really want to quit?'):
+        showwarning('Yes', 'Shutting down Filmtotaal')
+        window.destroy()
+    else:
+        showinfo('No', 'Quit has been cancelled')
+
+#initialiseren van de quit button
+button1 = Button(text='EXIT',bg="red",fg="black" ,command=callback).pack()
 
 
 
-
-#frame n1   ###########################3
+#frame n1   ###########################
 frame1 = Frame(window, padx=50, pady=30)
-
+frame1.configure(background="red4")
 
 GETnaam = StringVar()
 GETemail = StringVar()
 
-label = Label(frame1, text="voer gegevens in:", bg="green", font=25).pack(ipady=50, ipadx = 50 ,side=TOP)
+#GIF afbeelding
+logo1 = PhotoImage(file="pop1.gif")
+w1 = Label(frame1 , image=logo1).pack(side=TOP)
 
-Naam = Label(frame1, text='naam:', font=15).pack(pady=0, padx=20, side=LEFT)
+label = Label(frame1, text="voer gegevens in:", bg="lightblue1", font=25).pack(ipady=10, ipadx = 10 ,side=TOP)
+
+Naam = Label(frame1, text='naam:', font=15,bg="red4",fg="white").pack(pady=0, padx=20, side=LEFT)
 Naam_tekst = Entry(frame1, textvariable = GETnaam).pack(pady=50, side=LEFT)
 
-Email = Label(frame1, text='email:', font=15).pack(pady=0, padx=20, side=LEFT)
+Email = Label(frame1, text='email:', font=15,bg="red4",fg="white").pack(pady=0, padx=20, side=LEFT)
 Email_tekst = Entry(frame1, textvariable = GETemail).pack(pady=100, side=LEFT)
 
-buttonR = Button(frame1, text='continue', command=(lambda: close_frame1()))
+buttonR = Button(frame1, text='continue',bg="seagreen1", command=(lambda: close_frame1()))
 buttonR.pack(side=BOTTOM)
-##########################################
+#EINDE FRAME n1#########################################
 
-
-
-
-
-films = verwerk_xml('films.xml')
 
 
 
@@ -141,43 +230,65 @@ films = verwerk_xml('films.xml')
 
 
 #frame n2   ######################################
-frame2 = Frame(window, padx=100, pady=80)
+frame2 = Frame(window, padx=50, pady=30)
+frame2.configure(background="red4")
 
+logo2 = PhotoImage(file="pop1.gif")
+w1 = Label(frame2 , image=logo2).pack(side="top")
 
-label2 = Label(frame2, text="films van vandaag:", bg="blue", font=25).pack(ipadx=60, pady=50)
+label2 = Label(frame2, text="films van vandaag:", bg="lightblue1", font=25).pack(ipadx=10, pady=10,side=TOP)
 Filmlijst = Listbox(frame2, selectmode=SINGLE, width=50, height=15)
 Filmlijst.bind('<<ListboxSelect>>',selectie)
 for i in range(len(films['filmsoptv']['film'])):
-    Filmlijst.insert(END, (films['filmsoptv']['film'][i]['titel'], "om",  (datetime.datetime.fromtimestamp(int(films['filmsoptv']['film'][i]['starttijd'])).strftime('%H:%M') )))
-
-
+    Filmlijst.insert(END, (Nieuwe_film_lijst[i], "om",  Nieuwe_film_lijst_tijden[i] ))
 
 Filmlijst.pack()
 
-choose = Button(frame2, text="choose", command=(lambda: close_Frame2())).pack(pady=20, side=RIGHT)
-#####################################################
-
-
-
+choose = Button(frame2, text="choose",bg="seagreen1", command=(lambda: close_Frame2())).pack(pady=20, side=RIGHT)
+#EINDE FRAME n2####################################################
 
 
 
 
 #frame n3   #########################################
-
+#frame initialiseren
 frame3 = Frame(window, padx=300, pady=100)
+frame3.configure(background="red4")
 
-bestand = open("bezoekers.csv", 'a')
-reader = csv.writer(bestand, delimiter=';')
+#GIF afbeelding
+logo3 = PhotoImage(file="filmgegevens.gif")
+w1 = Label(frame3 , image=logo3).pack(side="top")
 
-gegevens = Label(frame3, text="uw gegevens:", bg="red", font=25).pack(ipadx=100, ipady=30)
+gegevens = Label(frame3, text="uw gegevens:", bg="red4",fg="white", font=25).pack(ipadx=100, ipady=30)
 
-accept = Button(frame3, text="accept", command=(lambda: close_Frame3())).pack(side=BOTTOM)
-#####################################################
-#\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+accept = Button(frame3, text="accept",bg="seagreen1", command=(lambda: close_Frame3())).pack(side=BOTTOM)
+#EINDE FRAME n3####################################################
+#EINDE KIJKERSCHERMEN\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
 
+
+
+
+
+
+
+
+def QRcode(lijst_bezoekers):
+    #Gegevens van de aanbieder opslaan in een QR code
+    qr = QRCode()
+    l = lijst_bezoekers
+
+    #Hier wordt de data toegevoegd
+    for rij in range(len(l)):
+        qr.add_data(l[rij])
+        qr.make(fit=True)
+
+    #img bevat een PIL.image.image object
+    img = qr.make_image()
+
+    #Save the Code
+    img.save('qrcode_project.png')
 
 
 
@@ -188,69 +299,88 @@ accept = Button(frame3, text="accept", command=(lambda: close_Frame3())).pack(si
 
 ############AANBIEDERS##############################
 
+#initialiseren van inlogscherm
+aanmeldFrame = Frame(window)
+aanmeldFrame.configure(background="red4")
+
+#lijst met bezoekers van aanbieder
 lijst = []
 
-
-aanbieders = verwerk_xml('aanbiedersaccount.xml')
-
-def sort(lst):
-    for i in range(len(lijst)):
-        for j in range(i+1, len(lijst)):
-            if lst[j] < lst[i]:
-                lst[j], lst[i] = lst[i], lst[j]
-    return lst
-
-def meldAan():
-    def_ID = GETID.get()
-    def_Ww = GETWw.get()
-
-    ingelogd = False
-    for row in range(len(aanbieders['aanbieders']['aanbieder'])):
-        if(def_ID in aanbieders['aanbieders']['aanbieder'][row]['Naam']) and (def_Ww in aanbieders['aanbieders']['aanbieder'][row]['Wachtwoord']) and (def_ID != "") and (def_Ww != ""):
-            ingelogd = True
-            print("ingelogd!")
-            aanmeldFrame.destroy()
-            lijstframe.pack(ipadx=200)
-            bezoekers.pack(pady=20)
-            T.pack()
-    if not ingelogd:
-        showinfo(title="popup", message="verkeerde invoer! probeer het later nog eens")
-        window.destroy()
-
-
-
-welkom = Label(aanmeldFrame, text="Welkom!").pack()
-
+#globale variabelen voor inloggegevens
 GETID = StringVar()
 GETWw = StringVar()
 
-ID = Label(aanmeldFrame, text='ID:', font=15).pack(pady=0, padx=20, side=LEFT)
-ID_tekst = Entry(aanmeldFrame, textvariable = GETID).pack(pady=50, side=LEFT)
+#initialiseren van frame voor de lijst
+Kijkerslist = Frame(window)
+Kijkerslist.configure(background="red4")
 
-Ww = Label(aanmeldFrame, text='Password:', font=15).pack(pady=0, padx=20, side=LEFT)
-Ww_tekst = Entry(aanmeldFrame, textvariable = GETWw).pack(pady=100, side=LEFT)
+def meldAan():
+    global aanmeldFrame
+
+    #invoer opslaan in variabelen
+    def_ID = GETID.get()
+    def_Ww = GETWw.get()
+
+    #gebasseerd op wie er inlogt, worden zijn bezoekers voor die dag opgevraagd
+    k = (def_ID,)
+    Checklist = c.execute("SELECT f.Titel, b.Naam, f.Starttijd, fa.Aanbieder FROM Films f LEFT JOIN Bezoekers b on f.Titel = b.Film LEFT JOIN FilmsMetAanbieders fa on fa.Film = f.Titel WHERE Naam NOT NULL AND Aanbieder IS ? ORDER BY Starttijd, Naam", (k))
+
+    ingelogd = False
+
+    #kijkt of de meegegeven ID en Wachtwoord voorkomen in de database met accounts
+    for row in range(len(aanbieders['aanbieders']['aanbieder'])):
+        if(def_ID in aanbieders['aanbieders']['aanbieder'][row]['Naam']) and (def_Ww in aanbieders['aanbieders']['aanbieder'][row]['Wachtwoord']) and (def_ID != "") and (def_Ww != ""):
+            ingelogd = True
+            aanmeldFrame.destroy()
+
+            for row in Checklist:
+                lijst.append(row)
+                print(row)
+
+            QRcode(lijst)
+            load = Image.open("qrcode_project.png")
+            render = ImageTk.PhotoImage(load)
+
+            img = Label(Kijkerslist,image =render)
+            img.image = render
+            img.place(x = 0, y = 0)
+
+            Kijkerslist.pack(ipadx=200)
+            print("done")
+
+    if not ingelogd:
+        #wanneer er een foute invoer wordt gegeven komt er een melding binnen en vervolgens wordt het frame opnieuw gebouwd
+        showinfo(title="popup", message="Het ID en/of Wachtwoord is onjuist")
+        aanmeldFrame.destroy()
+        aanmeldFrame = Frame(window)
+        aanmeldFrame.configure(background="red4")
+        Loginscreen()
+        aanmeldFrame.pack()
 
 
-Aanmelden = Button(aanmeldFrame, text="aanmelden", command=(lambda: meldAan())).pack()
+def Loginscreen():
+    #aanmaak van atributen voor het inlogscherm
+    welkom = Label(aanmeldFrame, text="Voer uw gegevens in A.u.b.",bg="red4",fg="white",font=("Helvetica", 16)).pack()
 
-lijstframe = Frame(window)
+    global GETID
+    global GETWw
 
-bezoekers = Label(lijstframe, text="bezoekers:", bg="red", font=25)
+    ID = Label(aanmeldFrame, text='ID:', bg="red4",fg="white").pack(pady=0, padx=20, side=LEFT)
+    ID_tekst = Entry(aanmeldFrame, textvariable = GETID).pack(pady=50, side=LEFT)
 
-bestand_bezoekers = open("bezoekers.csv", 'r')
-reader_bezoekers = csv.DictReader(bestand_bezoekers, delimiter=';')
+    Ww = Label(aanmeldFrame, text='Password:', font=15,bg="red4",fg="white").pack(pady=0, padx=20, side=LEFT)
+    Ww_tekst = Entry(aanmeldFrame, textvariable = GETWw).pack(pady=100, side=LEFT)
 
-for row in reader_bezoekers:
-    lijst.append((row['naam'] + ", " + row['film']))
-
-sort(lijst)
-
-T = Text(lijstframe, width=40, height=20)
-for item in range(len(lijst)):
-    T.insert(END, ((lijst[item]) + '\n'))
-
-bestand_bezoekers.close()
+    Aanmelden = Button(aanmeldFrame, text="aanmelden",bg="green" ,fg="white", command=(lambda: meldAan())).pack(side=BOTTOM)
 
 
+Loginscreen()
 
+
+#kop voor in frame met lijst van bezoekers
+bezoekers = Label(Kijkerslist, text="bezoekers:", bg="red4",fg="white", font=25).pack()
+
+#connectie laten comitten
+conn.commit()
+#programma draaiende houden
 window.mainloop()
