@@ -52,4 +52,3 @@ After this step you have to put in a ID and password. The program will then foll
 * JoeriStrik
 * Kelvinbroek
 * Meiyah
-* pjotrpaauw
