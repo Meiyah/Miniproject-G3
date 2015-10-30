@@ -1,0 +1,22 @@
+<aanbieders>
+    <aanbieder>
+        <Naam>Pathe</Naam>
+        <Wachtwoord>w1</Wachtwoord>
+    </aanbieder>
+    <aanbieder>
+        <Naam>Filmtotaal</Naam>
+        <Wachtwoord>w2</Wachtwoord>
+    </aanbieder>
+    <aanbieder>
+        <Naam>Cinemec Ede</Naam>
+        <Wachtwoord>w3</Wachtwoord>
+    </aanbieder>
+    <aanbieder>
+        <Naam>Cinemec Amsterdam</Naam>
+        <Wachtwoord>w4</Wachtwoord>
+    </aanbieder>
+    <aanbieder>
+        <Naam>HU</Naam>
+        <Wachtwoord>w5</Wachtwoord>
+    </aanbieder>
+</aanbieders>
