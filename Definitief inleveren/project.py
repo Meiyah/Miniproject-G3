@@ -24,6 +24,7 @@ response = requests.get('http://www.filmtotaal.nl/api/filmsoptv.xml?apikey=0246c
 auth=auth_details)
 
 def schrijf_xml():
+    """Opent de films.xml file"""
     bestand = open('films.xml', 'wb')
     bestand.write(bytes(response.text, 'UTF-8'))
     bestand.close()
@@ -33,6 +34,7 @@ schrijf_xml()
 
 #xml omzetten zodat die kan worden uitgelezen
 def verwerk_xml(file):
+    """Zet de xml om zodat deze kan worden uitgelezen"""
     bestand = open(file, 'r')
     xml_string = bestand.read()
     return xmltodict.parse(xml_string)
@@ -99,6 +101,7 @@ selectwaarde = ""
 
 def selectie(evt):
     #waarde opslaan waar de cursor op het moment is in de listbox van scherm 2
+    """Slaat de waarde op waar de cursor op het moment is in de listbox van scherm 2"""
     value=Filmlijst.get(Filmlijst.curselection())
     global selectwaarde
     selectwaarde = value[0]
@@ -107,6 +110,7 @@ def selectie(evt):
 
 def close_frame1():
     #sluiten van eerste kijkerscherm
+    """Sluit het eerste kijkerscherm af"""
     global definitieve_naam
     definitieve_naam = GETnaam.get()
 
@@ -126,6 +130,7 @@ def close_frame1():
 
 def close_Frame2():
     #sluiten van tweede kijkerscherm
+    """Sluit het tweede kijkerscherm af"""
     if selectwaarde != "":
         frame2.destroy()
         frame3.pack()
@@ -139,12 +144,14 @@ def close_Frame2():
 
 def close_Frame3():
     #sluiten van laatste kijkerscherm en gegevens invoeren in database
+    """Sluit het laatste kijkersscherm en voert de gegevens in in de sql database"""
     c.execute("INSERT INTO Bezoekers VALUES(?, ?, ?, ?, ?)", (selectwaarde, definitieve_naam, definitieve_email, definitieve_code, date))
     conn.commit()
     window.destroy()
 
 def codeGenerator(naam):
     #aanmaken van een unieke code voor de kijker gebasseerd op zijn/haar naam
+    """Maakt een unieke code aan voor de kijker gebasseerd op zijn/haar naam"""
     code = naam
     uniek = ""
 
@@ -156,11 +163,13 @@ def codeGenerator(naam):
 
 def kijkerScherm():
     #wordt actief wanneer er sprake is van een kijker
+    """Roept het kijkersscherm op als er voor kijker is gekozen"""
     beginscherm.destroy()
     frame1.pack()
 
 def aanbiederScherm():
     #wordt actief wanneer er sprake is van een aanbieder
+    """Roept het aanbiedersscherm op als er voor aanbieder is gekozen"""
     beginscherm.destroy()
     aanmeldFrame.pack()
 
@@ -189,6 +198,7 @@ beginbutton2 = Button(beginscherm, text="Kijker",bg="red4" ,fg="white",width = 8
 
 def callback():
     #functie voor de quit button
+    """Functie voor de quit button"""
     if askyesno('Verify', 'Do you Really want to quit?'):
         showwarning('Yes', 'Shutting down Filmtotaal')
         window.destroy()
@@ -276,6 +286,7 @@ accept = Button(frame3, text="accept",bg="seagreen1", command=(lambda: close_Fra
 
 def QRcode(lijst_bezoekers):
     #Gegevens van de aanbieder opslaan in een QR code
+    """Slaat de gegevens van de aanbieder op in een QR code"""
     qr = QRCode()
     l = lijst_bezoekers
 
@@ -312,7 +323,7 @@ Kijkerslist.configure(background="red4")
 
 def meldAan():
     global aanmeldFrame
-
+"""Checkt of de inloggevens kloppen wie er op dat moment inlogt"""
     #invoer opslaan in variabelen
     def_ID = GETID.get()
     def_Ww = GETWw.get()
@@ -356,6 +367,7 @@ def meldAan():
 
 def Loginscreen():
     #aanmaak van attributen voor het inlogscherm
+    """maakt de attributen voor het inlogscherm aan"""
     welkom = Label(aanmeldFrame, text="Voer uw gegevens in A.u.b.",bg="red4",fg="white",font=("Helvetica", 16)).pack()
 
     global GETID
